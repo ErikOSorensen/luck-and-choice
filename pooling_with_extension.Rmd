@@ -1,0 +1,99 @@
+---
+title: "Pooling with extension"
+author: "Erik Ø. Sørensen"
+date: "August 7, 2015"
+output: html_document
+---
+
+We have a table in the paper in which we pool the preferred data with the extension. This file generates the estimates
+and tests for equality of parameters across these experiments. 
+The document was changed in a minor way July 20th 2017 to 1) remove internal discussions
+about response to the editor and referees in the revision process and 
+2) addition of version information at the end.
+
+
+First I need to extract and run the library, load the data
+```{r, echo=FALSE, warning=FALSE, results='hide'}
+source("luck-model.R")
+ds1 <- datastruct(players[players$round==1,], situations)
+ds2 <- datastruct(players[players$round==2,], situations)
+ds.all <- datastruct(players, situations)
+```
+
+# Estimation on the extension data
+```{r}
+ll.2 <- function(b1.c=0, b2.c=-0.06, b3.c=-3, b4.c=0.1, b5.c=-1000, mu=-0.85, lsigma=0.8) {
+    pvector <- c(b1.c, b2.c, b3.c, b4.c, b5.c, mu, lsigma)
+    ll.luck(ds2, pvector)
+}
+```
+Without constraints: 
+```{r }
+fit.later1 <- mle(minuslog = ll.2, fixed=list(b1.c=0, b5.c=-1000), 
+              method="BFGS")
+summary(fit.later1)
+knitr::kable(delta.method(grtrans, vcov(fit.later1), coef(fit.later1)))
+logLik(fit.later1)
+```
+
+Now constraining the LE share to be zero:
+```{r }
+fit.later2 <- mle(minuslog = ll.2, fixed=list(b1.c=0,b3.c=-1000, b5.c=-1000), 
+              method="BFGS")
+summary(fit.later2)
+knitr::kable(delta.method(grtrans, vcov(fit.later2), coef(fit.later2)))
+logLik(fit.later2)
+```
+
+# Estimation on the pooled data.
+```{r}
+ll.all <- function(b1.c=0, b2.c=-0.06, b3.c=-3, b4.c=0.1, b5.c=-1000, mu=-0.85, lsigma=0.8) {
+    pvector <- c(b1.c, b2.c, b3.c, b4.c, b5.c, mu, lsigma)
+    ll.luck(ds.all, pvector)
+}
+```
+
+Without constraints: 
+```{r }
+fit.all1 <- mle(minuslog = ll.all, fixed=list(b1.c=0, b5.c=-1000), 
+              method="BFGS")
+summary(fit.all1)
+knitr::kable(delta.method(grtrans, vcov(fit.all1), coef(fit.all1)))
+logLik(fit.all1)
+```
+
+Now constraining the LE share to be zero:
+```{r }
+fit.all2 <- mle(minuslog = ll.all, fixed=list(b1.c=0,b3.c=-1000, b5.c=-1000), 
+              method="BFGS")
+summary(fit.all2)
+knitr::kable(delta.method(grtrans, vcov(fit.all2), coef(fit.all2)))
+logLik(fit.all2)
+```
+
+# Testing pooling
+
+First testing for the unconstrained model:
+```{r}
+diff1 <- -2*( logLik(fit.all1) - (-817.0486 + logLik(fit.later1)))
+diff1
+pchisq(diff1, df=6, lower.tail=FALSE)
+```
+
+Now testing with the share of LE constrained to zero:
+```{r}
+diff2 <- -2*(logLik(fit.all2)  - (-817.836 + logLik(fit.later2)))
+diff2
+pchisq(diff2, df=5, lower.tail=FALSE)
+```
+
+For footnote to paper: We cannot reject the restricted models in columns (3) and (4) against
+the unrestricted one in column (1) and (2) of table 9 and (1) and (2) of table 6 ($\chi^2_6=5.67, p=0.46$ for
+the model with LE included, $\chi^2_5=5.44, p=0.36$ with the lambda^LE=0).
+
+
+# Session Info
+This documents the versions used of R and the involved packages to calculate these numbers:
+```{r}
+sessionInfo()
+```

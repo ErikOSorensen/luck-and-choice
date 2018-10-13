@@ -1,0 +1,118 @@
+---
+title: "Main table"
+author: "Erik Ø. Sørensen"
+date: "07. feb. 2015"
+output: 
+  html_document:
+    theme: readable
+---
+
+This document is to estimate the specifications in the main table. Make
+sure to first extract the R-code from `luck-model.Rmd` (using `knitr::purl('luck-model.Rmd')`,
+unfortunately, knitr cannot call itself to do it automatically). Minor change July 20th, 2017 
+to document the version of packages used at the end of the document.
+
+# Setup - loading library and data
+First I need to extract and run the library
+```{r, echo=FALSE, warning=FALSE, results='hide'}
+source("luck-model.R")
+```
+For estimation, first look at the first round of data.
+```{r }
+ds.luck1 <- datastruct(players[players$round==1,], situations)
+```
+
+Next, define the likelihood function.
+```{r} 
+ll <- function(b1.c=0, b2.c=-0.06, b3.c=-3, b4.c=0.1, b5.c=-1000, mu=-0.85, lsigma=0.8) {
+     pvector <- c(b1.c, b2.c, b3.c, b4.c, b5.c, mu, lsigma)
+    ll.luck(ds.luck1, pvector)
+}
+```
+
+
+# Specifications
+First, estimate the main specification. 
+```{r}
+fit.all <- mle(minuslog = ll, fixed=list(b1.c=0, b5.c=-1000), 
+               method="BFGS", control=list(trace=TRUE, REPORT=2))
+summary(fit.all)
+logLik(fit.all)
+knitr::kable(delta.method(grtrans, vcov(fit.all), coef(fit.all)))
+
+```
+
+The ideals are, in order: SE, L, LE, CC (and sCC, not estimated in this document).
+
+Remove LE:
+```{r}
+fit.2 <- mle(minuslog = ll, fixed=list(b1.c=0, b3.c=-1000, b5.c=-1000), method="BFGS",
+             control=list(trace=TRUE, REPORT=2))
+summary(fit.2)
+knitr::kable(delta.method(grtrans, vcov(fit.2), coef(fit.2)))
+logLik(fit.2)
+```
+
+Now, remove LE and SE. When I remove one of the substantial ideals, the likelihood becomes
+quite ill-behaved and sensitive to starting values. These starting values converge at
+the best (local) point of convergence that I have found.
+```{r}
+fit.3 <- mle(minuslog = ll, start=list(b4.c=-0.292, mu=-10.8, lsigma=2.398), 
+             fixed=list(b1.c=-1000, b2.c=0, b3.c=-1000, b5.c=-1000), method="BFGS",
+             control=list(trace=TRUE, REPORT=2))
+summary(fit.3)
+knitr::kable(delta.method(grtrans, vcov(fit.3), coef(fit.3)))
+logLik(fit.3)
+```
+
+Remove LE and L:
+```{r}
+fit.4 <- mle(minuslog = ll, start=list(b4.c=0.48, mu=-1.3, lsigma=1.9), 
+             fixed=list(b1.c=0, b2.c=-1000, b3.c=-1000, b5.c=-1000),
+             method="BFGS", control=list(trace=TRUE, REPORT=2))
+summary(fit.4)
+knitr::kable(delta.method(grtrans, vcov(fit.4), coef(fit.4)))
+logLik(fit.4)
+```
+
+Remove LE and CC:
+```{r}
+fit.5 <- mle(minuslog = ll, start=list(b2.c=0.034, mu=-1.6, lsigma=1.0),
+             fixed=list(b1.c=0, b3.c=-1000, b4.c=-1000, b5.c=-1000), method="BFGS",
+             control=list(trace=TRUE, REPORT=2))
+summary(fit.5)
+bhhh.fit5 <- vcov.bhhh(ds.luck1, fit.5)
+knitr::kable(delta.method(grtrans, vcov(fit.5), coef(fit.5)))
+bhhh.fit5 <- vcov.bhhh(ds.luck1, fit.5)
+logLik(fit.5)
+```
+
+# Different way of calculating standard errors
+The above estimates of standard errors are based on the defaults of the stats4 library,
+which we cite in the paper. Some standard errors (for $\sigma$ are not well estimated). 
+One could think that this results from how the stats4 library calculates 
+standard errors: Based, as far as I understand, on taking the direct numerical Hessian
+of the log likelihood function. An alternative is the BHHH outer product of the gradient.
+I do that here (and conclude from this that it doesn't really matter which way we do it). 
+
+```{r}
+bhhh.all <- vcov.bhhh(ds.luck1, fit.all)
+knitr::kable(delta.method(grtrans, bhhh.all, coef(fit.all)))
+bhhh.fit2 <- vcov.bhhh(ds.luck1, fit.2)
+knitr::kable(delta.method(grtrans, bhhh.fit2, coef(fit.2)))
+bhhh.fit3 <- vcov.bhhh(ds.luck1, fit.3)
+knitr::kable(delta.method(grtrans, bhhh.fit3, coef(fit.3)))
+bhhh.fit4 <- vcov.bhhh(ds.luck1, fit.4)
+knitr::kable(delta.method(grtrans, bhhh.fit4, coef(fit.4)))
+bhhh.fit5 <- vcov.bhhh(ds.luck1, fit.5)
+knitr::kable(delta.method(grtrans, bhhh.fit5, coef(fit.5)))
+```
+
+# Session Info
+This documents the versions used of R and the involved packages to calculate these numbers:
+```{r}
+sessionInfo()
+```
+
+
+

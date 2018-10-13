@@ -1,0 +1,120 @@
+
+  ___  ____  ____  ____  ____ (R)
+ /__    /   ____/   /   ____/
+___/   /   /___/   /   /___/   14.2   Copyright 1985-2015 StataCorp LLC
+  Statistics/Data Analysis            StataCorp
+                                      4905 Lakeway Drive
+                                      College Station, Texas 77845 USA
+                                      800-STATA-PC        http://www.stata.com
+                                      979-696-4600        stata@stata.com
+                                      979-696-4601 (fax)
+
+9-user Stata network perpetual license:
+       Serial number:  301406212896
+         Licensed to:  Erik Ø. Sørensen
+                       Norwegian School of Economics
+
+Notes:
+      1.  Stata is running in batch mode.
+      2.  Unicode is supported; see help unicode_advice.
+
+. do preprocess.do 
+
+. /*
+>         First, create a set with each decision as a row in the data, all
+>         information about individuals stripped out.
+> */
+. use data/DataErik, clear
+
+. drop session round spectator insurance risk gender 
+
+. reshape long dist, i(pid) j(situation)
+(note: j = 1 2 3 4 5 6 7 8 9 10 11)
+
+Data                               wide   ->   long
+-----------------------------------------------------------------------------
+Number of obs.                      234   ->    2574
+Number of variables                  12   ->       3
+j variable (11 values)                    ->   situation
+xij variables:
+                 dist1 dist2 ... dist11   ->   dist
+-----------------------------------------------------------------------------
+
+. merge m:1 situation using data/situations
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                             0
+    matched                             2,574  (_merge==3)
+    -----------------------------------------
+
+. drop _merge
+
+. label var dist "Equalize (indicator)"
+
+. gen int inc1 = (dist==1)*X/2 + (dist==0)*e1
+
+. gen int inc2 = (dist==1)*X/2 + (dist==0)*e2
+
+. drop dist
+
+. label var inc1 "Income of P1"
+
+. label var inc2 "Income of P2"
+
+. order pid situation outcome1 outcome2 e1 e2 inc1 inc2 X Fse Fl Fle Fscc
+
+. compress
+  variable pid was float now int
+  variable inc1 was int now byte
+  variable inc2 was int now byte
+  variable Fscc was float now byte
+  (18,018 bytes saved)
+
+. sort pid situation
+
+. saveold data/DataErik_long, replace version(12)
+(saving in Stata 12 format, which can be read by Stata 11 or 12)
+file data/DataErik_long.dta saved
+
+. 
+. /*
+>         Second, create a dataset with info about participants, which session
+>         and such.
+> */
+. use data/DataErik, clear
+
+. keep pid session round spectator insurance risk gender
+
+. encode session, g(esession)
+
+. drop session 
+
+. rename esession Session
+
+. gen byte sex = 1 + (gender=="Female")
+
+. label define sex 1 "Male" 2 "Female"
+
+. label values sex sex
+
+. drop gender
+
+. order pid Session round sex spectator insurance risk
+
+. compress
+  variable pid was float now int
+  variable Session was long now byte
+  variable round was float now byte
+  (1,872 bytes saved)
+
+. sort pid
+
+. saveold data/DataErik_players, replace version(12)
+(saving in Stata 12 format, which can be read by Stata 11 or 12)
+file data/DataErik_players.dta saved
+
+. 
+. 
+. 
+end of do-file

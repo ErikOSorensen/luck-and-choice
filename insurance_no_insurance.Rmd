@@ -1,0 +1,189 @@
+---
+title: "Insurance and no insurance"
+author: "Erik Ø. Sørensen"
+date: "August 4, 2015"
+output: html_document
+---
+
+This document is to estimate on the insurance-no-insurance data. The editor wants us to comment on
+whether sigma is the same or different between those who bought and those who didn't buy
+insurance. The document was changed in a minor way July 20th 2017 to 1) remove internal discussions
+about response to the editor in the revision process and 2) addition of version information at the end.
+
+# Setup - loading library and subsetting data
+First I need to extract and run the library
+```{r, echo=FALSE, warning=FALSE, results='hide'}
+source("luck-model.R")
+```
+
+Data subsetting (the global datasets are defined in `luck-model`):
+```{r}
+ds.noin <- datastruct(players[players$round==1 & players$insurance==0,], situations)
+ds.in   <- datastruct(players[players$round==1 & players$insurance==1,], situations)
+```
+
+For the likelihood ratio test we also need the full dataset of round 1.
+```{r}
+ds <- datastruct(players[players$round==1,], situations)
+```
+
+
+
+# On the insured
+Defining the likelihood function on this subset of data:
+
+```{r}
+ll.in <- function(b1.c=0, b2.c=-0.06, b3.c=-3, b4.c=0.1, b5.c=-1000, mu=-0.85, lsigma=0.8) {
+    pvector <- c(b1.c, b2.c, b3.c, b4.c, b5.c, mu, lsigma)
+    ll.luck(ds.in, pvector)
+}
+```
+
+Without constraints: 
+```{r }
+fit.in1 <- mle(minuslog = ll.in, fixed=list(b1.c=0, b5.c=-1000), 
+              method="BFGS")
+summary(fit.in1)
+knitr::kable(delta.method(grtrans, vcov(fit.in1), coef(fit.in1)))
+logLik(fit.in1)
+```
+
+Now constraining the LE share to be zero:
+```{r }
+fit.in2 <- mle(minuslog = ll.in, fixed=list(b1.c=0,b3.c=-1000, b5.c=-1000), 
+              method="BFGS")
+summary(fit.in2)
+knitr::kable(delta.method(grtrans, vcov(fit.in2), coef(fit.in2)))
+logLik(fit.in2)
+```
+
+
+
+# On the non-insured
+
+Defining the likelihood function on this subset of data:
+```{r}
+ll.noin <- function(b1.c=0, b2.c=-0.06, b3.c=-3, b4.c=0.1, b5.c=-1000, mu=-0.85, lsigma=0.8) {
+    pvector <- c(b1.c, b2.c, b3.c, b4.c, b5.c, mu, lsigma)
+    ll.luck(ds.noin, pvector)
+}
+```
+
+First the model in without constraints:
+```{r }
+fit.noin1 <- mle(minuslog = ll.noin, 
+               fixed=list(b1.c=0, b5.c=-1000), method="BFGS")
+summary(fit.noin1)
+knitr::kable(delta.method(grtrans, vcov(fit.noin1), coef(fit.noin1)))
+logLik(fit.noin1)
+```
+
+Now constraining the LE share to be zero:
+```{r }
+fit.noin2 <- mle(minuslog = ll.noin, 
+               fixed=list(b1.c=0, b3.c=-1000, b5.c=-1000), method="BFGS")
+summary(fit.noin2)
+knitr::kable(delta.method(grtrans, vcov(fit.noin2), coef(fit.noin2)))
+logLik(fit.noin2)
+```
+
+
+# Constraining $\sigma$ to be the same
+
+In order to use the variant likelihood functions, we need a function
+that indicates which group we are are in:
+```{r}
+setGeneric("insured", function(s) standardGeneric("insured"))
+setMethod("insured", "individual",
+          function(s) {
+            if (s@insurance==1)
+              1
+            else
+              2
+          }
+)
+```
+
+Defining the likelihood function on all data and with the group indicator function:
+
+```{r}
+ll.in.2K <- function(b1.c=0, b2.c=-0.06, b3.c=-3, b4.c=0.1, b5.c=-1000, mu=-0.85, lsigma=0.8,
+                     b1.d=0.01, b2.d=0.01, b3.d=0.01, b4.d=0.01, b5.d=0.01, mu.d=0.01, lsigma.d=0.01) {
+    pvector <- c(b1.c, b2.c, b3.c, b4.c, b5.c, mu, lsigma, b1.d, b2.d, b3.d, b4.d, b5.d, mu.d, lsigma.d)
+    ll.luck.2K(ds, pvector, insured)
+}
+```
+
+Now estimating on the unconstrained model to confirm that the variant estimation command works:
+```{r }
+fit.2K <- mle(minuslog = ll.in.2K, 
+              start=list(b2.c=-0.57, b4.c=-0.05, mu=-0.93, lsigma=0.68,
+                         b2.d=2.3, b4.d=0.58, mu.d=0.06, lsigma.d=1.8),
+              fixed=list(b1.c=0, b1.d=0, b3.c=-1000, b3.d=0, b5.c=-1000, b5.d=0),
+              method="BFGS")
+summary(fit.2K)
+logLik(fit.2K)
+```
+
+We see that these numbers conform to those estimated seperately above, so this seems like a success.
+
+## Estimating with constrained $\sigma$
+
+First with non-constrained share of luck egalitarians:
+```{r }
+fit.2K.1 <- mle(minuslog = ll.in.2K, 
+              start=list(b2.c=-0.57, b3.c=-0.9, b4.c=-0.05, mu=-0.93, lsigma=1.2,
+                         b2.d=2.3, b3.d=0.1, b4.d=0.58, mu.d=0.06),
+              fixed=list(b1.c=0, b1.d=0, b5.c=-1000, b5.d=0, lsigma.d=0),
+              method="BFGS")
+summary(fit.2K.1)
+logLik(fit.2K.1)
+```
+
+Now with the share of luck egalitarians constrained to zero:
+```{r}
+fit.2K.2 <- mle(minuslog = ll.in.2K, 
+              start=list(b2.c=-0.57, b4.c=-0.05, mu=-0.93, lsigma=1.2,
+                         b2.d=2.3, b4.d=0.58, mu.d=0.06),
+              fixed=list(b1.c=0, b1.d=0, b3.c=-1000, b3.d=0, 
+                         b5.c=-1000, b5.d=0, lsigma.d=0),
+              method="BFGS")
+summary(fit.2K.2)
+logLik(fit.2K.2)
+```
+
+## Tests and pvalues of common $\sigma$
+First testing column 1 and 3 are the same.
+```{r}
+diff1 <- -2*(logLik(fit.2K.1) - (logLik(fit.in1)  + logLik(fit.noin1)))
+diff1 
+( p_non_constrained <- pchisq(diff1, df=1, lower.tail=FALSE))
+```
+
+Now testing with the share of LE constrained to zero (2 and 4):
+```{r}
+diff2 <- -2*(logLik(fit.2K.2) - (logLik(fit.in2)  + logLik(fit.noin2)))
+diff2
+( p_constrained <- pchisq(diff2, df=1, lower.tail=FALSE))
+```
+
+Standard analytic inference on maximum likelihood estimates is based on 
+asymptotic theory, and asymptotically, confidence
+intervals in the interior of the parameter space are symmetric. But using only the 
+local information at the unconstrained estimates might be restrictive, and we now
+include a footnote with likelihood ratio test for the equality of $\sigma$ between 
+these specifications (which cannot be rejected). Since the p-values are far from being
+close to significant, we believe that developing small-sample properties
+of $\sigma$ will not contribute much to the paper.
+
+Footnote for paper: The constraint that the $\sigma$s are the same in column 1 and 3
+and 2 and 4 cannot be rejected (likelihood ratio tests based on a pooled
+and restricted model: $\chi_1^2=0.56, p=0.45$ and $\chi_1^2=1.02, p=0.31$, 
+respectively).
+
+# Session Info
+This documents the versions used of R and the involved packages to calculate these numbers:
+
+```{r}
+sessionInfo()
+```

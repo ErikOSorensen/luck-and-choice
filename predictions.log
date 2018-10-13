@@ -1,0 +1,190 @@
+
+  ___  ____  ____  ____  ____ (R)
+ /__    /   ____/   /   ____/
+___/   /   /___/   /   /___/   14.0   Copyright 1985-2015 StataCorp LP
+  Statistics/Data Analysis            StataCorp
+                                      4905 Lakeway Drive
+                                      College Station, Texas 77845 USA
+                                      800-STATA-PC        http://www.stata.com
+                                      979-696-4600        stata@stata.com
+                                      979-696-4601 (fax)
+
+9-user Stata network perpetual license:
+       Serial number:  301406212896
+         Licensed to:  Erik Ø. Sørensen
+                       Norwegian School of Economics
+
+Notes:
+      1.  Stata is running in batch mode.
+      2.  Unicode is supported; see help unicode_advice.
+
+. do predictions.do 
+
+. set more off
+
+. 
+. /*
+>         Parameters for simulation:
+> */ 
+. set seed 123456789
+
+. global NS=100000
+
+. global l_se = 0.343
+
+. global l_l = 0.314
+
+. global l_cc = 0.343
+
+. global mu=-0.912
+
+. global sigma =2.140
+
+. 
+. 
+. /*
+>         Simulating individual parameters:
+> */
+. use data/DataErik_players, clear
+
+. keep if round==1
+(82 observations deleted)
+
+. expand ${NS}
+(15,199,848 observations created)
+
+. tempvar subpid
+
+. bys pid: gen `subpid' = _n
+
+. gen long spid = pid*1000000 + `subpid'
+
+. gen double u = runiform()
+
+. gen byte p_se = (u<${l_se})
+
+. gen byte p_cc = (u>= (1- ${l_cc}))
+
+. gen byte p_l  = (p_se==0 & p_cc==0)
+
+. gen double gamma = exp( ${mu} + ${sigma}*rnormal()) 
+
+. keep spid p_se p_l p_cc gamma
+
+. tempfile params
+
+. save `params'
+file /tmp/St03593.000001 saved
+
+. 
+. /*
+>         Simulating choices:
+> */
+. use data/DataErik_long, clear
+
+. 
+. expand ${NS}
+(257,397,426 observations created)
+
+. bys situation pid: gen s1 = _n
+
+. gen long spid = pid*1000000 + s1
+
+. merge m:1 spid using `params'
+
+    Result                           # of obs.
+    -----------------------------------------
+    not matched                    90,200,000
+        from master                90,200,000  (_merge==1)
+        from using                          0  (_merge==2)
+
+    matched                       167,200,000  (_merge==3)
+    -----------------------------------------
+
+. keep if _merge==3
+(90,200,000 observations deleted)
+
+. drop _merge
+
+. gen e_equal = -log(-log(runiform()))
+
+. gen e_leave = -log(-log(runiform()))
+
+. gen    ud_equal = (-(gamma /X)*(X/2 - Fse)^2 + e_equal) - (-(gamma/X)*(e1-Fse
+> )^2 + e_leave) if p_se==1
+(109,862,907 missing values generated)
+
+. replace ud_equal= (-(gamma /X)*(X/2 - Fl )^2 + e_equal) - (-(gamma/X)*(e1-Fl 
+> )^2 + e_leave) if p_l ==1
+(52,500,206 real changes made)
+
+. replace ud_equal= (-(gamma /X)*(X/2 - Fcc)^2 + e_equal) - (-(gamma/X)*(e1-Fcc
+> )^2 + e_leave) if p_cc==1
+(57,362,701 real changes made)
+
+. gen equal = (ud_equal>=0)
+
+. 
+. gen int y1 = X/2 if equal==1
+(84,941,764 missing values generated)
+
+. replace y1 = e1 if equal==0
+(84,941,764 real changes made)
+
+. gen cSE = (y1==Fse)
+
+. gen cCC = (y1==Fcc)
+
+. gen cL  = (y1==Fl)
+
+. gen cLE = (y1==Fle)
+
+. replace cLE = 1 if inlist(situation,2,5) 
+(30,400,000 real changes made)
+
+. collapse (sum) cSE cLE cCC cL , by(spid) 
+
+. forvalues t=8/11 {
+  2.         gen cSE`t' = cSE>=`t'
+  3.         gen cCC`t' = cCC>=`t'
+  4.         gen cLE`t' = cLE>=`t'
+  5.         gen cL`t'  = cL >=`t'
+  6. }
+
+. 
+. format %4.3f *11 *10 *9
+
+. 
+. forvalues t=11(-1)9 {
+  2.         di "t=`t'"
+  3.         summ cSE`t' cL`t' cLE`t' cCC`t', format
+  4. }
+t=11
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       cSE11 | 15,200,000       0.108       0.310      0.000      1.000
+        cL11 | 15,200,000       0.099       0.298      0.000      1.000
+       cLE11 | 15,200,000       0.001       0.033      0.000      1.000
+       cCC11 | 15,200,000       0.108       0.310      0.000      1.000
+t=10
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       cSE10 | 15,200,000       0.151       0.358      0.000      1.000
+        cL10 | 15,200,000       0.139       0.346      0.000      1.000
+       cLE10 | 15,200,000       0.012       0.107      0.000      1.000
+       cCC10 | 15,200,000       0.152       0.359      0.000      1.000
+t=9
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+        cSE9 | 15,200,000       0.191       0.393      0.000      1.000
+         cL9 | 15,200,000       0.181       0.385      0.000      1.000
+        cLE9 | 15,200,000       0.061       0.239      0.000      1.000
+        cCC9 | 15,200,000       0.197       0.398      0.000      1.000
+
+. 
+. 
+. 
+end of do-file
