@@ -2,15 +2,17 @@
 title: "Main table"
 author: "Erik Ø. Sørensen"
 date: "07. feb. 2015"
-output: 
-  html_document:
-    theme: readable
+output: github_document
 ---
 
 This document is to estimate the specifications in the main table. Make
 sure to first extract the R-code from `luck-model.Rmd` (using `knitr::purl('luck-model.Rmd')`,
 unfortunately, knitr cannot call itself to do it automatically). Minor change July 20th, 2017 
-to document the version of packages used at the end of the document.
+to document the version of packages used at the end of the document. Minor change October 13, 2018,
+in order to render markdown output in GitHub format.
+
+
+
 
 # Setup - loading library and data
 First I need to extract and run the library

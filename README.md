@@ -6,11 +6,6 @@ model estimated in Johanna Mollerstrom, Bjørn-Atle Reme, Erik
 of fairness views, Journal of Public Economics, Volume 131, 2015,
 Pages 33-40, https://doi.org/10.1016/j.jpubeco.2015.08.010.
 
-
-Below is a documentation of the files in
-MollerstromRemeSorensen2015_estimation.zip, which bundles data and
-code for the estimation of the choice models.
-
 data/DataErik.dta and data/situations.dta: Data
 
 preprocess.do (and .log): Stata dataprocessing script which

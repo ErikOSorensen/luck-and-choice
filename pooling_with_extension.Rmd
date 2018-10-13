@@ -2,7 +2,7 @@
 title: "Pooling with extension"
 author: "Erik Ø. Sørensen"
 date: "August 7, 2015"
-output: html_document
+output: github_document
 ---
 
 We have a table in the paper in which we pool the preferred data with the extension. This file generates the estimates
@@ -10,6 +10,8 @@ and tests for equality of parameters across these experiments.
 The document was changed in a minor way July 20th 2017 to 1) remove internal discussions
 about response to the editor and referees in the revision process and 
 2) addition of version information at the end.
+Minor change October 13, 2018,
+in order to render markdown output in GitHub format.
 
 
 First I need to extract and run the library, load the data

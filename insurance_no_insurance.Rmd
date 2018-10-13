@@ -2,13 +2,14 @@
 title: "Insurance and no insurance"
 author: "Erik Ø. Sørensen"
 date: "August 4, 2015"
-output: html_document
+output: github_document
 ---
 
 This document is to estimate on the insurance-no-insurance data. The editor wants us to comment on
 whether sigma is the same or different between those who bought and those who didn't buy
 insurance. The document was changed in a minor way July 20th 2017 to 1) remove internal discussions
-about response to the editor in the revision process and 2) addition of version information at the end.
+about response to the editor in the revision process and 2) addition of version information at the end. Minor change October 13, 2018,
+in order to render markdown output in GitHub format.
 
 # Setup - loading library and subsetting data
 First I need to extract and run the library
