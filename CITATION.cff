@@ -4,7 +4,7 @@
 cff-version: 1.2.0
 title: >-
   Replication package for "Luck, choice and
-  responsibility — An experimental study of fairness
+  responsibility - An experimental study of fairness
   views"
 message: >-
   If you use this software, please cite it using the
@@ -31,7 +31,7 @@ identifiers:
 repository-code: 'https://github.com/ErikOSorensen/luck-and-choice'
 license: BSD-3-Clause
 references:
-# This is an attempt at getting a citation of the paper supported.
+  - title: "Luck, choice and responsibility - An experimental study of fairness views"
   - authors:
     - given-names: Johanna
       family-names: Mollerstrom
@@ -40,11 +40,11 @@ references:
     - given-names: Erik Ø.
       family-names: Sørensen
   - doi: "10.1016/j.jpubeco.2015.08.010"
-  - title: "Luck, choice and responsibility — An experimental study of fairness views"
   - journal: "Journal of Public Economics"
   - type: article
   - volume: 131
   - year: 2015
   - start: 33
   - end: 40
+  - scope: "This is the paper the software was developed to support"
 
