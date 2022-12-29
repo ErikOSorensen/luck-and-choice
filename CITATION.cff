@@ -31,6 +31,7 @@ identifiers:
 repository-code: 'https://github.com/ErikOSorensen/luck-and-choice'
 license: BSD-3-Clause
 references:
+# This is an attempt at getting a citation of the paper supported.
   - authors:
     - given-names: Johanna
       family-names: Mollerstrom
