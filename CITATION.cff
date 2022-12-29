@@ -32,19 +32,19 @@ repository-code: 'https://github.com/ErikOSorensen/luck-and-choice'
 license: BSD-3-Clause
 references:
   - title: "Luck, choice and responsibility - An experimental study of fairness views"
-  - authors:
-    - given-names: Johanna
-      family-names: Mollerstrom
-    - given-names: Bjørn-Atle
-      family-names: Reme
-    - given-names: Erik Ø.
-      family-names: Sørensen
-  - doi: "10.1016/j.jpubeco.2015.08.010"
-  - journal: "Journal of Public Economics"
-  - type: article
-  - volume: 131
-  - year: 2015
-  - start: 33
-  - end: 40
-  - scope: "This is the paper the software was developed to support"
+    authors:
+      - given-names: Johanna
+        family-names: Mollerstrom
+      - given-names: Bjørn-Atle
+        family-names: Reme
+      - given-names: Erik Ø.
+        family-names: Sørensen
+    doi: "10.1016/j.jpubeco.2015.08.010"
+    journal: "Journal of Public Economics"
+    type: article
+    volume: 131
+    year: 2015
+    start: 33
+    end: 40
+    scope: "This is the paper the software was developed to support"
 
