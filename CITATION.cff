@@ -1,0 +1,48 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  Replication package for "Luck, choice and
+  responsibility — An experimental study of fairness
+  views"
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Johanna
+    family-names: Mollerstrom
+    orcid: 'https://orcid.org/0000-0002-8097-2058'
+    affiliation: George Mason University
+  - given-names: Bjørn-Atle
+    family-names: Reme
+    affiliation: Norwegian Institute of Public Health
+    orcid: 'https://orcid.org/0000-0002-1554-0996'
+  - given-names: Erik Ø.
+    family-names: Sørensen
+    email: erik.sorensen@nhh.no
+    affiliation: NHH Norwegian School of Economics
+    orcid: 'https://orcid.org/0000-0002-7155-4188'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.5658118
+    description: Concept DOI
+repository-code: 'https://github.com/ErikOSorensen/luck-and-choice'
+license: BSD-3-Clause
+references:
+  - authors:
+    - given-names: Johanna
+      family-names: Mollerstrom
+    - given-names: Bjørn-Atle
+      family-names: Reme
+    - given-names: Erik Ø.
+      family-names: Sørensen
+  - doi: "10.1016/j.jpubeco.2015.08.010"
+  - journal: "Journal of Public Economics"
+  - type: article
+  - volume: 131
+  - year: 2015
+  - start: 33
+  - end: 40
+
